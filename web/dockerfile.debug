@@ -1,0 +1,16 @@
+FROM node:lts-alpine
+
+ENV NODE_ENV local
+ENV APP_PATH=/app
+
+RUN mkdir -p $APP_PATH
+
+WORKDIR $APP_PATH
+
+COPY package.json package-lock.json /app/
+
+RUN npm install
+
+USER node
+
+CMD npm run serve
