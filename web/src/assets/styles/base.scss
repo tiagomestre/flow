@@ -1,40 +1,84 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,600;0,700;1,100;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+
+html {
+  overflow: hidden;
+}
+
 body {
-    @apply text-base;
-    @apply leading-normal;
+    // font-family: Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;
     @apply text-gray-800;
+    @apply font-light;
+    @apply text-base;
+    @apply leading-none;
+    @apply bg-gray-100;
+}
+
+.no-select {
+    user-select: none;
+}
+
+button:hover, input:focus, input[type='submit']:hover, select:hover {
+    @apply outline-none;
+    @apply transition-all;
+    @apply duration-300;
+    @apply shadow-lg;
+    @apply border-blue-400;
+}
+
+button:focus, select:focus {
+    @apply outline-none;
+}
+
+button, input, select {
+    @apply no-select;
+    @apply bg-white;
+    @apply px-4;
+    @apply py-2;
+    @apply font-light;
+    @apply border;
+    @apply rounded;
+    @apply border-gray-300;
+    @apply transition-all;
+    @apply duration-300;
+    @apply appearance-none;
+    @apply leading-none;
+    @apply shadow-md;
+}
+
+button {
+    @apply inline-flex;
+    @apply items-center;
+}
+
+select {
+    @apply cursor-pointer;
+}
+
+input[type='submit'] {
+    @apply cursor-pointer;
+}
+
+input[type='number'] {
+    @apply box-content;
+    height: 16px;
+    @apply align-top;
 }
 
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
 }
 
-.no-select {
-    -webkit-touch-callout: none; /* iOS Safari */
-      -webkit-user-select: none; /* Safari */
-       -khtml-user-select: none; /* Konqueror HTML */
-         -moz-user-select: none; /* Old versions of Firefox */
-          -ms-user-select: none; /* Internet Explorer/Edge */
-              user-select: none; /* Non-prefixed version, currently
-                                    supported by Chrome, Edge, Opera and Firefox */
+input::first-line {
+    @apply leading-none;
 }
 
-button:focus  { 
-  @apply outline-none;
-}
-
-input:focus  { 
-  @apply outline-none;
-}
-
-select:focus  { 
-  @apply outline-none;
-}
-
-.description {
-  h2 {
-    font-size: 1.5em;
-  }
+input::placeholder {
+    @apply text-xs;
+    @apply text-blue-300;
 }
