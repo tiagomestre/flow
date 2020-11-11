@@ -23,7 +23,9 @@
             </div>
 
             <div>
-                {{ wheel.dx }} - {{ wheel.dy }}
+                <div>{{ wheel.dx }} - {{ wheel.dy }}</div>
+                
+                <div>{{ x }} - {{ y }}</div>
             </div>
         </div>
     </div>
@@ -33,12 +35,75 @@
 import Vue from 'vue';
 import Konva from 'konva';
 
+interface GridChunkOptions {
+    width: number;
+    height: number;
+    blockSize: number;
+    x: number;
+    y: number;
+}
+
+class GridChunk {
+    private group: Konva.Group = new Konva.Group();
+
+    private width: number;
+    private height: number;
+    private blockSize: number;
+
+    public x: number;
+    public y: number;
+
+    public constructor(options: GridChunkOptions) {
+        this.width = options.width;
+        this.height = options.height;
+        this.blockSize = options.blockSize;
+
+        this.x = options.x;
+        this.y = options.y;
+    }
+    
+    public build(): Konva.Group {
+
+        const normalizedWidth = Math.ceil(this.width / this.blockSize) * this.blockSize;
+        const normalizedHeight = Math.ceil(this.height / this.blockSize) * this.blockSize;
+
+        for (var i = 0; i < normalizedWidth / this.blockSize; i++) {
+            const line = new Konva.Line({
+                points: [0, 0, 0, normalizedHeight],
+                stroke: '#eee',
+                strokeWidth: 1,
+                x: this.x * normalizedWidth + Math.round(i * this.blockSize),
+                y: this.y * normalizedHeight 
+            });
+
+            this.group.add(line);
+        }
+
+        for (var j = 0; j < normalizedHeight / this.blockSize; j++) {
+            const line = new Konva.Line({
+                points: [0, 0, normalizedWidth, 0],
+                stroke: '#eee',
+                strokeWidth: 1,
+                x: this.x * normalizedWidth ,
+                y: this.y * normalizedHeight + Math.round(j * this.blockSize),
+            })
+    
+            this.group.add(line);
+        }
+
+        return this.group;
+    }
+}
+
+
 export default Vue.extend({
     data() {
         return {
             debugValues: [],
             stage: null,
             rectangle: null,
+            x: 0,
+            y: 0,
             wheel: {
                 dx: 0,
                 dy: 0
@@ -60,6 +125,17 @@ export default Vue.extend({
             width: window.innerWidth,
             height: window.innerHeight,
             draggable: true
+        });
+
+        stage.on('dragmove', () => {
+            const x = stage.x();
+            const y = stage.y();
+
+            this.$data.x = x;
+            this.$data.y = y;
+
+            this.wheel.dx = x ? x > 0 ? Math.ceil(stage.x() / width) : Math.ceil(stage.x() / width) : 0;
+            this.wheel.dy = y ? y > 0 ? Math.ceil(stage.y() / height) : Math.ceil(stage.y() / height) : 0;
         });
 
         this.$data.stage = stage;
@@ -90,52 +166,23 @@ export default Vue.extend({
         var layer = new Konva.Layer();
         var gridLayer = new Konva.Layer();
 
-        function drawGrid(width: number, height: number, blockSize: number, x: number, y: number): Konva.Line[] {
+        const gridChuncks: GridChunk[] = [];
+
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: 0, y: 0 }));
+
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: -1, y: 0 }));
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: -1, y: -1 }));
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: 0, y: -1 }));
+
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: 1, y: 0 }));
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: 1, y: 1 }));
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: 0, y: 1 }));
+
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: -1, y: 1 }));
+        gridChuncks.push(new GridChunk({ width, height, blockSize, x: 1, y: -1 }));
         
-            const lines: Konva.Line[] = [];
-            const normalizedWidth = Math.ceil(width / blockSize) * blockSize;
-            const normalizedHeight = Math.ceil(height / blockSize) * blockSize;
+        gridLayer.add(...gridChuncks.map((c) => c.build()));
 
-            for (var i = 0; i < normalizedWidth / blockSize; i++) {
-                const line = new Konva.Line({
-                    points: [0, 0, 0, normalizedHeight],
-                    stroke: '#ddd',
-                    strokeWidth: 1,
-                    x: x * normalizedWidth + Math.round(i * blockSize),
-                    y: y * normalizedHeight 
-                });
-
-                lines.push(line);
-            }
-
-            for (var j = 0; j < normalizedHeight / blockSize; j++) {
-                const line = new Konva.Line({
-                    points: [0, 0, normalizedWidth, 0],
-                    stroke: '#ddd',
-                    strokeWidth: 1,
-                    x: x * normalizedWidth ,
-                    y: y * normalizedHeight + Math.round(j * blockSize),
-                })
-    
-                lines.push(line);
-            }
-
-            return lines;
-        }
-
-        gridLayer.add(...drawGrid(width, height, blockSize, 0, 0));
-
-        gridLayer.add(...drawGrid(width, height, blockSize, -1, 0));
-        gridLayer.add(...drawGrid(width, height, blockSize, -1, -1));
-        gridLayer.add(...drawGrid(width, height, blockSize, 0, -1));
-
-        gridLayer.add(...drawGrid(width, height, blockSize, 1, 0));
-        gridLayer.add(...drawGrid(width, height, blockSize, 1, 1));
-        gridLayer.add(...drawGrid(width, height, blockSize, 0, 1));
-
-        gridLayer.add(...drawGrid(width, height, blockSize, -1, 1));
-        gridLayer.add(...drawGrid(width, height, blockSize, 1, -1));
-        
         layer.add(newRectangle(blockSize * 3, blockSize * 3, stage));
         layer.add(newRectangle(blockSize * 10, blockSize * 10, stage))
         layer.add(newRectangle(blockSize * 15, blockSize * 6, stage));
